@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 // ─────────────────────────────────────────────
 // ENUMS
@@ -26,6 +27,7 @@ enum NotInterestedReason {
 class StoreVisitViewModel extends ChangeNotifier {
   // ── Form Key ─────────────────────────────────────────────────────────────
   final formKey = GlobalKey<FormState>();
+  final _picker = ImagePicker();
 
   // ── Basic Information ─────────────────────────────────────────────────────
   final storeNameCtrl = TextEditingController();
@@ -55,44 +57,93 @@ class StoreVisitViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Business Details ──────────────────────────────────────────────────────
+  // ── Business Details (Installation & Onboarding) ──────────────────────────
   static const List<String> storeTypes = [
-    'Restaurants',
-    'Food Court',
-    'Tiffin Center',
-    'Fast Food',
-    'Kirana / General Store',
-    'Supermarket',
-    'Modern Kirana Store',
-    'Catering',
-    'Bakery',
+    'Restaurants', 'Food Court', 'Tiffin Center', 'Fast Food',
+    'Kirana / General Store', 'Supermarket', 'Modern Kirana Store',
+    'Catering', 'Bakery', 'Other',
+  ];
+
+  static const List<String> installationFailureReasons = [
+    'Got error',
+    'Asked me to come again',
+    'Decision maker not available',
+    'Not using smart phone',
+    'Not interested in online purchase',
+    'I have credit in the wholesale market',
+    'Enter any other reason',
   ];
 
   String? _selectedStoreType;
   String? get selectedStoreType => _selectedStoreType;
-
   void setStoreType(String? val) {
     _selectedStoreType = val;
+    if (val != 'Other') otherStoreTypeCtrl.clear();
     notifyListeners();
   }
 
   final monthlyPurchaseCtrl    = TextEditingController();
   final interestedProductsCtrl = TextEditingController();
+  final otherStoreTypeCtrl     = TextEditingController();
 
-  bool _appInstalled = false;
-  bool _res          = false;
-  bool _orderPlaced  = false;
-  bool _appTraining  = false;
+  // 1. App Installed
+  bool? _isAppInstalled;
+  bool? get isAppInstalled => _isAppInstalled;
+  String? _appNotInstalledReason;
+  String? get appNotInstalledReason => _appNotInstalledReason;
+  final appNotInstalledOtherCtrl = TextEditingController();
 
-  bool get appInstalled => _appInstalled;
-  bool get res          => _res;
-  bool get orderPlaced  => _orderPlaced;
-  bool get appTraining  => _appTraining;
+  void setAppInstalled(bool? val) {
+    _isAppInstalled = val;
+    if (val == true) {
+      _appNotInstalledReason = null;
+      appNotInstalledOtherCtrl.clear();
+    }
+    notifyListeners();
+  }
+  void setAppNotInstalledReason(String? val) {
+    _appNotInstalledReason = val;
+    notifyListeners();
+  }
 
-  void toggleAppInstalled(bool val) { _appInstalled = val; notifyListeners(); }
-  void toggleRes(bool val)          { _res = val;          notifyListeners(); }
-  void toggleOrderPlaced(bool val)  { _orderPlaced = val;  notifyListeners(); }
-  void toggleAppTraining(bool val)  { _appTraining = val;  notifyListeners(); }
+  // 2. Registration Completed
+  bool? _isRegistrationCompleted;
+  bool? get isRegistrationCompleted => _isRegistrationCompleted;
+  final regNoReasonCtrl   = TextEditingController();
+  final regFeedbackCtrl   = TextEditingController();
+
+  void setRegistrationCompleted(bool? val) {
+    _isRegistrationCompleted = val;
+    if (val == true) regNoReasonCtrl.clear();
+    if (val == false) regFeedbackCtrl.clear();
+    notifyListeners();
+  }
+
+  // 3. App Training
+  bool? _isAppTrainingProvided;
+  bool? get isAppTrainingProvided => _isAppTrainingProvided;
+  final trainingNoReasonCtrl = TextEditingController();
+  final trainingFeedbackCtrl = TextEditingController();
+
+  void setAppTrainingProvided(bool? val) {
+    _isAppTrainingProvided = val;
+    if (val == true) trainingNoReasonCtrl.clear();
+    if (val == false) trainingFeedbackCtrl.clear();
+    notifyListeners();
+  }
+
+  // 4. First Order Placed
+  bool? _isOrderPlaced;
+  bool? get isOrderPlaced => _isOrderPlaced;
+  final orderNoReasonCtrl = TextEditingController();
+  final orderFeedbackCtrl = TextEditingController();
+
+  void setOrderPlaced(bool? val) {
+    _isOrderPlaced = val;
+    if (val == true) orderNoReasonCtrl.clear();
+    if (val == false) orderFeedbackCtrl.clear();
+    notifyListeners();
+  }
 
   // ── Visit Status ──────────────────────────────────────────────────────────
   VisitStatus? _visitStatus;
@@ -127,7 +178,37 @@ class StoreVisitViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Visit Proof ───────────────────────────────────────────────────────────
+  // ── Visit Proof ─────────────────────────────────────────────────────────────
+  final Map<String, XFile?> _photos = {
+    'store':  null,
+    'board':  null,
+    'owner':  null,
+    'selfie': null,
+  };
+
+  bool isPhotoSelected(String key) => _photos[key] != null;
+  XFile? getPhoto(String key) => _photos[key];
+
+  Future<void> pickPhoto(String key) async {
+    try {
+      final XFile? photo = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 70,
+      );
+      if (photo != null) {
+        _photos[key] = photo;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Error picking photo: $e');
+    }
+  }
+
+  void removePhoto(String key) {
+    _photos[key] = null;
+    notifyListeners();
+  }
+
   // ── Submission ───────────────────────────────────────────────────────────
   bool _isSubmitting = false;
   bool get isSubmitting => _isSubmitting;
@@ -159,7 +240,15 @@ class StoreVisitViewModel extends ChangeNotifier {
     stateCtrl.dispose();
     monthlyPurchaseCtrl.dispose();
     interestedProductsCtrl.dispose();
+    appNotInstalledOtherCtrl.dispose();
+    regNoReasonCtrl.dispose();
+    regFeedbackCtrl.dispose();
+    trainingNoReasonCtrl.dispose();
+    trainingFeedbackCtrl.dispose();
+    orderNoReasonCtrl.dispose();
+    orderFeedbackCtrl.dispose();
     followUpNotesCtrl.dispose();
+    otherStoreTypeCtrl.dispose();
     super.dispose();
   }
 }

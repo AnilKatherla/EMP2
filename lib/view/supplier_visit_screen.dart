@@ -162,11 +162,7 @@ class _SupplierVisitView extends StatelessWidget {
       preferredSize: const Size.fromHeight(AppSpacing.appBarHeightLarge),
       child: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.secondary, AppColors.secondaryDark],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppColors.primary,
         ),
         child: AppBar(
           backgroundColor: Colors.transparent,
@@ -370,14 +366,7 @@ class _StickyFooter extends StatelessWidget {
         height: AppSpacing.xl5,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            gradient: vm.isSubmitting
-                ? null
-                : const LinearGradient(
-                    colors: [AppColors.secondary, AppColors.secondaryDark],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-            color: vm.isSubmitting ? AppColors.secondaryContainer : null,
+            color: vm.isSubmitting ? AppColors.primaryContainer : AppColors.primary,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: ElevatedButton(
@@ -412,13 +401,13 @@ class _StickyFooter extends StatelessWidget {
                       SizedBox(
                         width: 20,
                         height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.secondary),
+                        child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
                       ),
                       SizedBox(width: 12),
                       Text('Saving Visit…'),
                     ],
                   )
-                : const Text('Save Supplier Visit', style: AppTextStyles.buttonL),
+                : Text('Save Supplier Visit', style: AppTextStyles.buttonL),
           ),
         ),
       ),

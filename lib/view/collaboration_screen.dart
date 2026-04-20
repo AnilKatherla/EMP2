@@ -127,11 +127,7 @@ class _CollaborationView extends StatelessWidget {
       preferredSize: const Size.fromHeight(AppSpacing.appBarHeightLarge),
       child: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.info, AppColors.infoDark],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppColors.primary,
         ),
         child: AppBar(
           backgroundColor: Colors.transparent,
@@ -265,8 +261,7 @@ class _StickyFooter extends StatelessWidget {
         height: AppSpacing.xl5,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            gradient: vm.isSubmitting ? null : const LinearGradient(colors: [AppColors.info, AppColors.infoDark], begin: Alignment.topLeft, end: Alignment.bottomRight),
-            color: vm.isSubmitting ? AppColors.infoContainer : null,
+            color: vm.isSubmitting ? AppColors.primaryContainer : AppColors.primary,
             borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: ElevatedButton(
@@ -278,8 +273,8 @@ class _StickyFooter extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md))),
             child: vm.isSubmitting
-                ? const Row(mainAxisAlignment: MainAxisAlignment.center, children: [SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.info)), SizedBox(width: 12), Text('Processing…')])
-                : const Text('Save Collaboration', style: AppTextStyles.buttonL),
+                ? const Row(mainAxisAlignment: MainAxisAlignment.center, children: [SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary)), SizedBox(width: 12), Text('Processing…')])
+                : Text('Save Collaboration', style: AppTextStyles.buttonL),
           ),
         ),
       ),

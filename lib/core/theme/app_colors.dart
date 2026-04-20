@@ -85,33 +85,39 @@ abstract final class AppColors {
 
   static const Color _blue50   = Color(0xFFEFF6FF);
   static const Color _blue100  = Color(0xFFDBEAFE);
+  static const Color _blue200  = Color(0xFFBFDBFE);
+  static const Color _blue300  = Color(0xFF93C5FD);
+  static const Color _blue400  = Color(0xFF60A5FA);
   static const Color _blue500  = Color(0xFF3B82F6);
   static const Color _blue600  = Color(0xFF2563EB);
+  static const Color _blue700  = Color(0xFF1D4ED8);
+  static const Color _blue800  = Color(0xFF1E40AF);
+  static const Color _blue900  = Color(0xFF1E3A8A);
 
   // ─────────────────────────────────────────
   // 02 · BRAND / PRIMARY
   // ─────────────────────────────────────────
 
-  static const Color primary          = _indigo500;
-  static const Color primaryLight     = _indigo400;
-  static const Color primaryDark      = _indigo700;
-  static const Color primaryContainer = _indigo100;
+  static const Color primary          = _blue400;
+  static const Color primaryLight     = _blue300;
+  static const Color primaryDark      = _blue600;
+  static const Color primaryContainer = _blue100;
   static const Color onPrimary        = _neutral0;
-  static const Color onPrimaryContainer = _indigo800;
+  static const Color onPrimaryContainer = _blue900;
 
-  static const Color secondary          = _violet500;
-  static const Color secondaryLight     = _violet400;
-  static const Color secondaryDark      = _violet600;
-  static const Color secondaryContainer = Color(0xFFEDE9FE); // violet-100
+  static const Color secondary          = _cyan600;
+  static const Color secondaryLight     = _cyan500;
+  static const Color secondaryDark      = Color(0xFF0891B2);
+  static const Color secondaryContainer = Color(0xFFCFFAFE); // cyan-100
   static const Color onSecondary        = _neutral0;
-  static const Color onSecondaryContainer = Color(0xFF4C1D95); // violet-900
+  static const Color onSecondaryContainer = Color(0xFF164E63); // cyan-900
 
-  static const Color tertiary          = _cyan500;
-  static const Color tertiaryLight     = _cyan400;
-  static const Color tertiaryDark      = _cyan600;
-  static const Color tertiaryContainer = Color(0xFFCFFAFE); // cyan-100
+  static const Color tertiary          = _blue500;
+  static const Color tertiaryLight     = _blue400;
+  static const Color tertiaryDark      = _blue600;
+  static const Color tertiaryContainer = Color(0xFFDBEAFE); // blue-100
   static const Color onTertiary        = _neutral0;
-  static const Color onTertiaryContainer = Color(0xFF164E63); // cyan-900
+  static const Color onTertiaryContainer = Color(0xFF1E3A8A); // blue-900
 
   // ─────────────────────────────────────────
   // 03 · BACKGROUND & SURFACE (LIGHT)
@@ -122,7 +128,7 @@ abstract final class AppColors {
   static const Color surfaceLight         = _neutral0;
   static const Color surfaceVariantLight  = _neutral100;
   static const Color cardLight            = _neutral0;
-  static const Color cardTintLight        = _indigo50;
+  static const Color cardTintLight        = _blue50;
 
   // ─────────────────────────────────────────
   // 04 · BACKGROUND & SURFACE (DARK)
@@ -133,7 +139,7 @@ abstract final class AppColors {
   static const Color surfaceDark        = _neutral850;
   static const Color surfaceVariantDark = _neutral800;
   static const Color cardDark           = _neutral800;
-  static const Color cardTintDark       = Color(0xFF1A1F3D); // indigo-tinted dark
+  static const Color cardTintDark       = Color(0xFF1E293B); // neutral-800
 
   // ─────────────────────────────────────────
   // 05 · TEXT (LIGHT)
@@ -144,8 +150,8 @@ abstract final class AppColors {
   static const Color textMutedLight     = _neutral400;
   static const Color textDisabledLight  = _neutral300;
   static const Color textInverseLight   = _neutral0;
-  static const Color textBrandLight     = _indigo600;
-  static const Color textLinkLight      = _indigo600;
+  static const Color textBrandLight     = _blue600;
+  static const Color textLinkLight      = _blue600;
 
   // ─────────────────────────────────────────
   // 06 · TEXT (DARK)
@@ -156,8 +162,8 @@ abstract final class AppColors {
   static const Color textMutedDark     = _neutral600;
   static const Color textDisabledDark  = _neutral700;
   static const Color textInverseDark   = _neutral900;
-  static const Color textBrandDark     = _indigo300;
-  static const Color textLinkDark      = _indigo300;
+  static const Color textBrandDark     = _blue300;
+  static const Color textLinkDark      = _blue300;
 
   // ─────────────────────────────────────────
   // 07 · STATUS COLORS
@@ -201,8 +207,8 @@ abstract final class AppColors {
 
   static const Color borderLight        = _neutral200;
   static const Color borderDark         = _neutral700;
-  static const Color borderFocusLight   = _indigo400;
-  static const Color borderFocusDark    = _indigo400;
+  static const Color borderFocusLight   = _blue500;
+  static const Color borderFocusDark    = _blue500;
   static const Color borderErrorLight   = _red500;
   static const Color borderErrorDark    = _red500;
   static const Color dividerLight       = _neutral150;
@@ -224,19 +230,19 @@ abstract final class AppColors {
   static const Color iconSecondaryLight = _neutral400;
   static const Color iconPrimaryDark    = _neutral300;
   static const Color iconSecondaryDark  = _neutral600;
-  static const Color iconBrand          = _indigo500;
+  static const Color iconBrand          = _blue600;
 
   // ─────────────────────────────────────────
   // 11 · BUTTONS
   // ─────────────────────────────────────────
 
-  static const Color buttonPrimary         = _indigo500;
-  static const Color buttonPrimaryHover    = _indigo600;
-  static const Color buttonPrimaryDisabled = _indigo200;
+  static const Color buttonPrimary         = _blue400;
+  static const Color buttonPrimaryHover    = _blue500;
+  static const Color buttonPrimaryDisabled = _blue100;
   static const Color onButtonPrimary       = _neutral0;
 
-  static const Color buttonOutlineBorder   = _indigo400;
-  static const Color buttonOutlineContent  = _indigo600;
+  static const Color buttonOutlineBorder   = _blue300;
+  static const Color buttonOutlineContent  = _blue500;
 
   static const Color buttonDestructive     = _red500;
   static const Color buttonDestructiveHover = _red600;
@@ -254,8 +260,8 @@ abstract final class AppColors {
   // 13 · HIGHLIGHTS / SELECTION
   // ─────────────────────────────────────────
 
-  static const Color selectionLight    = _indigo100;
-  static const Color selectionDark     = Color(0xFF2D2F6B);
+  static const Color selectionLight    = _blue100;
+  static const Color selectionDark     = Color(0xFF1E3A8A);
   static const Color highlightLight    = Color(0xFFFEF9C3); // yellow-100
   static const Color highlightDark     = Color(0xFF422006);
 
@@ -273,19 +279,19 @@ abstract final class AppColors {
   static const LinearGradient gradientPrimary = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [_indigo500, _violet500],
+    colors: [_blue400, _blue500],
   );
 
   static const LinearGradient gradientPrimarySubtle = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [_indigo50, Color(0xFFEDE9FE)],
+    colors: [_blue50, _blue100],
   );
 
   static const LinearGradient gradientCool = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [_cyan500, _indigo500],
+    colors: [_cyan500, _blue600],
   );
 
   static const LinearGradient gradientDark = LinearGradient(

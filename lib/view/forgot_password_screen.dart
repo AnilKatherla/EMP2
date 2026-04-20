@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:emp/core/theme/app_colors.dart';
 import 'package:emp/core/theme/app_spacing.dart';
 import 'otp_screen.dart';
 
@@ -6,8 +7,8 @@ import 'otp_screen.dart';
 abstract class _C {
   static const Color scaffoldBg    = Color(0xFFF4F6FA);
   static const Color cardBg        = Color(0xFFFFFFFF);
-  static const Color primary       = Color(0xFF0070F3);
-  static const Color primaryLight  = Color(0xFF3B9EFF);
+  static const Color primary       = AppColors.primary;
+  static const Color primaryLight  = AppColors.primaryLight;
   static const Color textPrimary   = Color(0xFF0F1629);
   static const Color textSecondary = Color(0xFF64748B);
   static const Color textMuted     = Color(0xFF94A3B8);
@@ -319,11 +320,7 @@ class _ForgotLogoBadge extends StatelessWidget {
           width: 76, height: 76,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF4B6EF5), Color(0xFF2A4FE8)],
-              begin:  Alignment.topLeft,
-              end:    Alignment.bottomRight,
-            ),
+            color: AppColors.primary,
             boxShadow: [
               BoxShadow(
                 color:      const Color(0xFF2A4FE8).withOpacity(0.45),
@@ -657,15 +654,9 @@ class _PrimaryButtonState extends State<_PrimaryButton>
           height: 50,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            gradient: widget.disabled
-                ? const LinearGradient(
-                    colors: [Color(0xFFB0C4D8), Color(0xFF9DB3C6)],
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                  )
-                : const LinearGradient(
-                    colors: [_C.primary, _C.primaryLight],
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
-                  ),
+            color: widget.disabled
+                ? const Color(0xFFCBD5E1)
+                : AppColors.primary,
             boxShadow: widget.disabled ? [] : [
               BoxShadow(
                 color:      _C.primary.withOpacity(0.28),

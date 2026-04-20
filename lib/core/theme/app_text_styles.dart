@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_spacing.dart';
 
@@ -23,7 +24,23 @@ abstract final class AppTextStyles {
   ///         - asset: assets/fonts/Inter-Medium.ttf   weight: 500
   ///         - asset: assets/fonts/Inter-SemiBold.ttf weight: 600
   ///         - asset: assets/fonts/Inter-Bold.ttf     weight: 700
-  static const String _fontFamily = 'Inter';
+  static const String _fontFamily = 'Outfit';
+
+  static TextStyle _outfit({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) {
+    return GoogleFonts.outfit(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      letterSpacing: letterSpacing,
+      height: height,
+    );
+  }
 
   // ─────────────────────────────────────────
   // BASE TEXT THEME  (used inside AppTheme)
@@ -68,8 +85,7 @@ abstract final class AppTextStyles {
     double letterSpacing = 0,
     double height = 1.5,
   ]) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: size,
         fontWeight: weight,
         color: color,
@@ -82,91 +98,79 @@ abstract final class AppTextStyles {
   // ─────────────────────────────────────────
 
   // --- Headings ---
-  static const TextStyle headingXL = TextStyle(
-    fontFamily: _fontFamily,
-    fontSize: 32,
-    fontWeight: FontWeight.w700,
-    letterSpacing: -0.5,
-    height: 1.2,
-  );
+  static TextStyle get headingXL => _outfit(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.5,
+        height: 1.2,
+      );
 
-  static const TextStyle headingL = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get headingL => _outfit(
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.3,
     height: 1.3,
   );
 
-  static const TextStyle headingM = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get headingM => _outfit(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
     height: 1.3,
   );
 
-  static const TextStyle headingS = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get headingS => _outfit(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     height: 1.4,
   );
 
   // --- Body ---
-  static const TextStyle bodyL = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get bodyL => _outfit(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.6,
   );
 
-  static const TextStyle bodyM = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get bodyM => _outfit(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.6,
   );
 
-  static const TextStyle bodyS = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get bodyS => _outfit(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.5,
   );
 
   // --- Labels ---
-  static const TextStyle labelL = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get labelL => _outfit(
     fontSize: 14,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.1,
   );
 
-  static const TextStyle labelM = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get labelM => _outfit(
     fontSize: 12,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.3,
   );
 
-  static const TextStyle labelS = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get labelS => _outfit(
     fontSize: 11,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
   );
 
   // --- Overline / Caption ---
-  static const TextStyle overline = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get overline => _outfit(
     fontSize: 10,
     fontWeight: FontWeight.w600,
     letterSpacing: 1.2,
   );
 
-  static const TextStyle caption = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get caption => _outfit(
     fontSize: 11,
     fontWeight: FontWeight.w400,
     letterSpacing: 0.3,
@@ -174,15 +178,13 @@ abstract final class AppTextStyles {
   );
 
   // --- Buttons ---
-  static const TextStyle buttonL = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get buttonL => _outfit(
     fontSize: 15,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.2,
   );
 
-  static const TextStyle buttonM = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get buttonM => _outfit(
     fontSize: 13,
     fontWeight: FontWeight.w600,
     letterSpacing: 0.2,
@@ -198,16 +200,14 @@ abstract final class AppTextStyles {
   );
 
   // --- Dashboard KPI numbers ---
-  static const TextStyle kpiLarge = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get kpiLarge => _outfit(
     fontSize: 36,
     fontWeight: FontWeight.w700,
     letterSpacing: -1,
     height: 1.1,
   );
 
-  static const TextStyle kpiMedium = TextStyle(
-    fontFamily: _fontFamily,
+  static TextStyle get kpiMedium => _outfit(
     fontSize: 24,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
@@ -215,11 +215,11 @@ abstract final class AppTextStyles {
   );
 
   // --- Links ---
-  static TextStyle link({Color color = AppColors.textLinkLight}) => TextStyle(
-        fontFamily: _fontFamily,
+  static TextStyle link({Color color = AppColors.textLinkLight}) => _outfit(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: color,
+      ).copyWith(
         decoration: TextDecoration.underline,
         decorationColor: color.withAlpha((0.4 * 255).round()),
       );
@@ -253,7 +253,27 @@ abstract final class AppTextStyles {
 ///   )
 ///   ```
 abstract final class ResponsiveTextStyles {
-  static const String _fontFamily = 'Inter';
+  static const String _fontFamily = 'Outfit';
+
+  static TextStyle _outfit({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+    TextDecoration? decoration,
+    Color? decorationColor,
+  }) {
+    return GoogleFonts.outfit(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      letterSpacing: letterSpacing,
+      height: height,
+      decoration: decoration,
+      decorationColor: decorationColor,
+    );
+  }
 
   // ─────────────────────────────────────────
   // HEADINGS
@@ -261,8 +281,7 @@ abstract final class ResponsiveTextStyles {
 
   /// Display — large hero text (e.g. splash screens)
   static TextStyle displayLarge(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 57),
         fontWeight: FontWeight.w700,
         letterSpacing: -0.25,
@@ -272,8 +291,7 @@ abstract final class ResponsiveTextStyles {
 
   /// Page-level hero heading
   static TextStyle headingLarge(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 32),
         fontWeight: FontWeight.w700,
         letterSpacing: -0.5,
@@ -283,8 +301,7 @@ abstract final class ResponsiveTextStyles {
 
   /// Section heading
   static TextStyle headingMedium(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 24),
         fontWeight: FontWeight.w700,
         letterSpacing: -0.3,
@@ -294,8 +311,7 @@ abstract final class ResponsiveTextStyles {
 
   /// Sub-section heading
   static TextStyle headingSmall(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 20),
         fontWeight: FontWeight.w600,
         letterSpacing: -0.2,
@@ -305,8 +321,7 @@ abstract final class ResponsiveTextStyles {
 
   /// Card title / list item heading
   static TextStyle titleLarge(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 18),
         fontWeight: FontWeight.w600,
         height: 1.4,
@@ -314,8 +329,7 @@ abstract final class ResponsiveTextStyles {
       );
 
   static TextStyle titleMedium(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 16),
         fontWeight: FontWeight.w600,
         letterSpacing: 0.15,
@@ -324,8 +338,7 @@ abstract final class ResponsiveTextStyles {
       );
 
   static TextStyle titleSmall(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 14),
         fontWeight: FontWeight.w500,
         letterSpacing: 0.1,
@@ -339,8 +352,7 @@ abstract final class ResponsiveTextStyles {
 
   /// Primary reading text
   static TextStyle bodyLarge(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 16),
         fontWeight: FontWeight.w400,
         letterSpacing: 0.5,
@@ -350,8 +362,7 @@ abstract final class ResponsiveTextStyles {
 
   /// Secondary / compact reading text
   static TextStyle bodyMedium(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 14),
         fontWeight: FontWeight.w400,
         letterSpacing: 0.25,
@@ -361,8 +372,7 @@ abstract final class ResponsiveTextStyles {
 
   /// Small detail text
   static TextStyle bodySmall(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 12),
         fontWeight: FontWeight.w400,
         letterSpacing: 0.4,
@@ -375,8 +385,7 @@ abstract final class ResponsiveTextStyles {
   // ─────────────────────────────────────────
 
   static TextStyle labelLarge(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 14),
         fontWeight: FontWeight.w500,
         letterSpacing: 0.1,
@@ -384,8 +393,7 @@ abstract final class ResponsiveTextStyles {
       );
 
   static TextStyle labelMedium(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 12),
         fontWeight: FontWeight.w500,
         letterSpacing: 0.5,
@@ -393,8 +401,7 @@ abstract final class ResponsiveTextStyles {
       );
 
   static TextStyle labelSmall(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 11),
         fontWeight: FontWeight.w500,
         letterSpacing: 0.5,
@@ -407,8 +414,7 @@ abstract final class ResponsiveTextStyles {
 
   /// Metadata / timestamp / fine-print text
   static TextStyle caption(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 11),
         fontWeight: FontWeight.w400,
         letterSpacing: 0.3,
@@ -418,8 +424,7 @@ abstract final class ResponsiveTextStyles {
 
   /// ALL-CAPS overline (categories, tags)
   static TextStyle overline(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 10),
         fontWeight: FontWeight.w600,
         letterSpacing: 1.2,
@@ -431,8 +436,7 @@ abstract final class ResponsiveTextStyles {
   // ─────────────────────────────────────────
 
   static TextStyle buttonLarge(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 15),
         fontWeight: FontWeight.w600,
         letterSpacing: 0.2,
@@ -440,8 +444,7 @@ abstract final class ResponsiveTextStyles {
       );
 
   static TextStyle buttonMedium(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 13),
         fontWeight: FontWeight.w600,
         letterSpacing: 0.2,
@@ -453,8 +456,7 @@ abstract final class ResponsiveTextStyles {
   // ─────────────────────────────────────────
 
   static TextStyle kpiLarge(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 36),
         fontWeight: FontWeight.w700,
         letterSpacing: -1.0,
@@ -463,8 +465,7 @@ abstract final class ResponsiveTextStyles {
       );
 
   static TextStyle kpiMedium(BuildContext context, {Color? color}) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 24),
         fontWeight: FontWeight.w700,
         letterSpacing: -0.5,
@@ -480,8 +481,7 @@ abstract final class ResponsiveTextStyles {
     BuildContext context, {
     Color color = AppColors.textLinkLight,
   }) =>
-      TextStyle(
-        fontFamily: _fontFamily,
+      _outfit(
         fontSize: AppSpacing.sp(context, 14),
         fontWeight: FontWeight.w500,
         color: color,
@@ -509,15 +509,13 @@ abstract final class ResponsiveTextStyles {
     return TextTheme(
       // Display
       displayLarge:  displayLarge(context, color: baseColor),
-      displayMedium: TextStyle(
-        fontFamily: _fontFamily,
+      displayMedium: _outfit(
         fontSize: AppSpacing.sp(context, 45),
         fontWeight: FontWeight.w700,
         height: 1.16,
         color: baseColor,
       ),
-      displaySmall: TextStyle(
-        fontFamily: _fontFamily,
+      displaySmall: _outfit(
         fontSize: AppSpacing.sp(context, 36),
         fontWeight: FontWeight.w600,
         height: 1.22,

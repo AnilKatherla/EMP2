@@ -7,8 +7,52 @@ import 'package:emp/core/theme/app_text_styles.dart';
 // ─────────────────────────────────────────────
 // DASHBOARD SCREEN
 // ─────────────────────────────────────────────
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen>
+    with SingleTickerProviderStateMixin {
+  bool _isPunchedIn = false;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  void _togglePunch() {
+    setState(() => _isPunchedIn = !_isPunchedIn);
+    final msg = _isPunchedIn ? 'Punched In ✅' : 'Punched Out 🔴';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: _isPunchedIn ? AppColors.success : AppColors.error,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+      ),
+    );
+  }
 
   // Card data: [label, value, icon]
   static const _cards = [
@@ -65,7 +109,7 @@ class DashboardScreen extends StatelessWidget {
       drawer: _buildDrawer(context),
       appBar: _buildAppBar(context),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: EdgeInsets.symmetric(
             horizontal: AppSpacing.screenH,
           ),
@@ -82,6 +126,11 @@ class DashboardScreen extends StatelessWidget {
               // ── Profile Card ────────────────────────────────
               _buildProfileCard(context),
 
+              SizedBox(height: AppSpacing.gapLG),
+
+              // ── Task Progress Card ──────────────────────────
+              _buildTaskProgressCard(context),
+
               SizedBox(height: AppSpacing.gapXL),
 
               // ── Section Label ────────────────────────────────
@@ -90,9 +139,10 @@ class DashboardScreen extends StatelessWidget {
               SizedBox(height: AppSpacing.gapMD),
 
               // ── KPI Grid ────────────────────────────────────
-              Expanded(
-                child: _buildDashboardGrid(context),
-              ),
+              _buildDashboardGrid(context),
+
+              // Bottom padding for a cleaner look when scrolled
+              SizedBox(height: AppSpacing.gapXL),
             ],
           ),
         ),
@@ -104,7 +154,8 @@ class DashboardScreen extends StatelessWidget {
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final theme = Theme.of(context);
     return AppBar(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: AppColors.primary,
+      foregroundColor: AppColors.onPrimary,
       elevation: 0,
       scrolledUnderElevation: 1,
       shadowColor: theme.shadowColor,
@@ -132,22 +183,93 @@ class DashboardScreen extends StatelessWidget {
           Text(
             "TrackForce",
             style: AppTextStyles.headingM.copyWith(
-              color: theme.colorScheme.onSurface,
+              color: AppColors.onPrimary,
               letterSpacing: -0.5,
             ),
           ),
         ],
       ),
-      iconTheme: IconThemeData(color: theme.colorScheme.onSurface),
+      iconTheme: const IconThemeData(color: AppColors.onPrimary),
       actions: [
-        // Notification bell with badge
+        // ── Punch In / Punch Out Button ──────────────────────────
+        GestureDetector(
+          onTap: _togglePunch,
+          child: AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _isPunchedIn ? _pulseAnimation.value : 1.0,
+                child: child,
+              );
+            },
+            child: Container(
+              margin: EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xxs,
+              ),
+              decoration: BoxDecoration(
+                color: _isPunchedIn
+                    ? AppColors.success.withAlpha((0.25 * 255).round())
+                    : Colors.white.withAlpha((0.18 * 255).round()),
+                borderRadius: BorderRadius.circular(AppRadius.full),
+                border: Border.all(
+                  color: _isPunchedIn
+                      ? AppColors.success
+                      : Colors.white.withAlpha((0.55 * 255).round()),
+                  width: 1.4,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Animated status dot
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 400),
+                    width: 7,
+                    height: 7,
+                    decoration: BoxDecoration(
+                      color: _isPunchedIn ? AppColors.success : AppColors.error,
+                      shape: BoxShape.circle,
+                      boxShadow: _isPunchedIn
+                          ? [
+                              BoxShadow(
+                                color: AppColors.success
+                                    .withAlpha((0.6 * 255).round()),
+                                blurRadius: 6,
+                              ),
+                            ]
+                          : [],
+                    ),
+                  ),
+                  SizedBox(width: AppSpacing.xs),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      _isPunchedIn ? 'IN' : 'OUT',
+                      key: ValueKey(_isPunchedIn),
+                      style: AppTextStyles.labelM.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        SizedBox(width: AppSpacing.gapSM),
+        // ── Notification Bell ────────────────────────────────────
         Stack(
           children: [
             IconButton(
               onPressed: () {},
-              icon: Icon(
+              icon: const Icon(
                 Icons.notifications_none_rounded,
-                color: theme.colorScheme.onSurfaceVariant,
+                color: AppColors.onPrimary,
               ),
             ),
             Positioned(
@@ -214,25 +336,19 @@ class DashboardScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Avatar
+          // Profile Image
           Container(
             width: AppSpacing.avatarLG,
             height: AppSpacing.avatarLG,
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha((0.2 * 255).round()),
               shape: BoxShape.circle,
               border: Border.all(
                 color: Colors.white.withAlpha((0.6 * 255).round()),
                 width: 2,
               ),
-            ),
-            child: Center(
-              child: Text(
-                "A",
-                style: AppTextStyles.headingXL.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
+              image: const DecorationImage(
+                image: AssetImage('assets/images/anil.jpg'),
+                fit: BoxFit.cover,
               ),
             ),
           ),
@@ -311,7 +427,178 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  // ── Task Progress Card ──────────────────────────────────────────────────
+  Widget _buildTaskProgressCard(BuildContext context) {
+    final theme = Theme.of(context);
+    const completed = 8;
+    const total = 12;
+    const pending = total - completed;
+    const progress = completed / total;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha((0.05 * 255).round()),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Stack(
+          children: [
+            // ── Background Illustration (Ghosted SVG) ────────────────
+            Positioned(
+              right: -10,
+              bottom: -10,
+              child: Opacity(
+                opacity: 0.12,
+                child: Icon(
+                  Icons.auto_graph_rounded, // Replace with SvgPicture.asset('...')
+                  size: 100,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+
+            // ── Card Content ──────────────────────────────────────────
+            Padding(
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: Row(
+                children: [
+                  // ── Circular Progress Chart ────────────────
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 72,
+                        height: 72,
+                        child: CircularProgressIndicator(
+                          value: 1.0,
+                          strokeWidth: 8,
+                          color: AppColors.successContainer.withAlpha((0.4 * 255).round()),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 72,
+                        height: 72,
+                        child: CircularProgressIndicator(
+                          value: progress,
+                          strokeWidth: 8,
+                          strokeCap: StrokeCap.round,
+                          color: AppColors.success,
+                        ),
+                      ),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "${(progress * 100).toInt()}%",
+                            style: AppTextStyles.labelL.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          Text(
+                            "Done",
+                            style: AppTextStyles.caption.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: AppSpacing.gapLG),
+
+                  // ── Legend and Stats ──────────────────────
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Daily Progress",
+                          style: AppTextStyles.headingS.copyWith(
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        SizedBox(height: AppSpacing.gapSM),
+                        Row(
+                          children: [
+                            _buildTaskInfoRow(
+                              context,
+                              "Completed",
+                              completed.toString(),
+                              AppColors.success,
+                            ),
+                            SizedBox(width: AppSpacing.gapMD),
+                            _buildTaskInfoRow(
+                              context,
+                              "Pending",
+                              pending.toString(),
+                              AppColors.warning,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Arrow indicator
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: theme.colorScheme.onSurfaceVariant.withAlpha((0.5 * 255).round()),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTaskInfoRow(BuildContext context, String label, String value, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            SizedBox(width: AppSpacing.xs),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: AppSpacing.xxs),
+        Text(
+          value,
+          style: AppTextStyles.headingS.copyWith(
+            color: color,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+
   // ── Section Header ──────────────────────────────────────────────────────
+
   Widget _buildSectionHeader(BuildContext context) {
     final theme = Theme.of(context);
 
@@ -365,6 +652,8 @@ class DashboardScreen extends StatelessWidget {
         final ratio  = tileW / tileH;
 
         return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: crossCount,
           crossAxisSpacing: spacing,
           mainAxisSpacing: spacing,
@@ -583,11 +872,7 @@ class DashboardScreen extends StatelessWidget {
         AppSpacing.xl2,
       ),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppColors.primary,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -617,43 +902,50 @@ class DashboardScreen extends StatelessWidget {
             ],
           ),
           SizedBox(height: AppSpacing.gapLG),
-          // User avatar
-          Container(
-            width: AppSpacing.avatarMD,
-            height: AppSpacing.avatarMD,
-            decoration: BoxDecoration(
-              color: Colors.white.withAlpha((0.2 * 255).round()),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withAlpha((0.6 * 255).round()),
-                width: 2,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                "A",
-                style: AppTextStyles.headingM.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
+          // User info row
+          Row(
+            children: [
+              // User profile image
+              Container(
+                width: AppSpacing.avatarXL,
+                height: AppSpacing.avatarXL,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withAlpha((0.6 * 255).round()),
+                    width: 2.5,
+                  ),
+                  image: const DecorationImage(
+                    image: AssetImage('assets/images/anil.jpg'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-          ),
-          SizedBox(height: AppSpacing.gapMD),
-          // User name
-          Text(
-            "Anil Kumar",
-            style: AppTextStyles.headingS.copyWith(
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: AppSpacing.xxs),
-          // User subtitle
-          Text(
-            "Sales Executive · TF12345",
-            style: AppTextStyles.labelL.copyWith(
-              color: Colors.white.withAlpha((0.75 * 255).round()),
-            ),
+              SizedBox(width: AppSpacing.gapLG),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // User name
+                    Text(
+                      "Anil Kumar",
+                      style: AppTextStyles.headingS.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                    SizedBox(height: AppSpacing.xxs),
+                    // User subtitle
+                    Text(
+                      "Sales Executive · TF12345",
+                      style: AppTextStyles.labelL.copyWith(
+                        color: Colors.white.withAlpha((0.75 * 255).round()),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

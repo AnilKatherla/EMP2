@@ -99,7 +99,7 @@ abstract final class AppTheme {
       brightness: brightness,
       colorScheme: colorScheme,
       textTheme: textTheme,
-      fontFamily: 'Inter',
+      fontFamily: 'Outfit',
 
       // ── Scaffold ───────────────────────────
       scaffoldBackgroundColor: isLight
@@ -108,12 +108,8 @@ abstract final class AppTheme {
 
       // ── AppBar ─────────────────────────────
       appBarTheme: AppBarTheme(
-        backgroundColor: isLight
-            ? AppColors.surfaceLight
-            : AppColors.surfaceDark,
-        foregroundColor: isLight
-            ? AppColors.textPrimaryLight
-            : AppColors.textPrimaryDark,
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
         elevation: AppElevation.appBar,
         scrolledUnderElevation: AppElevation.level1,
         surfaceTintColor: Colors.transparent,
@@ -122,25 +118,17 @@ abstract final class AppTheme {
             : AppColors.shadowDark,
         centerTitle: false,
         titleTextStyle: AppTextStyles.headingM.copyWith(
-          color: isLight
-              ? AppColors.textPrimaryLight
-              : AppColors.textPrimaryDark,
+          color: AppColors.onPrimary,
         ),
-        iconTheme: IconThemeData(
-          color: isLight
-              ? AppColors.iconPrimaryLight
-              : AppColors.iconPrimaryDark,
+        iconTheme: const IconThemeData(
+          color: AppColors.onPrimary,
           size: AppSpacing.iconLG,
         ),
-        actionsIconTheme: IconThemeData(
-          color: isLight
-              ? AppColors.iconPrimaryLight
-              : AppColors.iconPrimaryDark,
+        actionsIconTheme: const IconThemeData(
+          color: AppColors.onPrimary,
           size: AppSpacing.iconLG,
         ),
-        systemOverlayStyle: isLight
-            ? SystemUiOverlayStyle.dark
-            : SystemUiOverlayStyle.light,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
 
       // ── ElevatedButton ─────────────────────

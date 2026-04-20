@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -5,6 +7,7 @@ import 'package:emp/core/theme/app_colors.dart';
 import 'package:emp/core/theme/app_spacing.dart';
 import 'package:emp/core/theme/app_text_styles.dart';
 import 'package:emp/viewmodel/store_visit/store_visit_viewmodel.dart';
+import 'package:image_picker/image_picker.dart';
 
 // ─────────────────────────────────────────────
 // STORE VISIT SCREEN  (entry point)
@@ -88,15 +91,6 @@ class _StoreVisitView extends StatelessWidget {
                           ),
                           SizedBox(height: AppSpacing.gapMD),
                           _TfField(
-                            controller: vm.addressCtrl,
-                            label: 'Address',
-                            hint: 'Full store address',
-                            prefixIcon: Icons.location_on_rounded,
-                            maxLines: 3,
-                            validator: _required,
-                          ),
-                          SizedBox(height: AppSpacing.gapMD),
-                          _TfField(
                             controller: vm.gstCtrl,
                             label: 'GST Number',
                             hint: 'Optional',
@@ -106,64 +100,9 @@ class _StoreVisitView extends StatelessWidget {
                         ],
                       ),
                     ),
-
                     SizedBox(height: AppSpacing.gapMD),
 
-                    // ── 2. Location ─────────────────────────────────────────────
-                    _SectionCard(
-                      label: 'Location',
-                      icon: Icons.my_location_rounded,
-                      iconColor: AppColors.info,
-                      iconTint: AppColors.infoContainer,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // GPS Fetch Button
-                          _GpsButton(vm: vm),
-                          SizedBox(height: AppSpacing.gapMD),
-                          _TfField(
-                            controller: vm.pinCodeCtrl,
-                            label: 'Pin Code',
-                            hint: '6-digit pin code',
-                            prefixIcon: Icons.pin_drop_rounded,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(6),
-                            ],
-                            validator: _required,
-                          ),
-                          SizedBox(height: AppSpacing.gapMD),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _TfField(
-                                  controller: vm.cityCtrl,
-                                  label: 'City',
-                                  hint: 'City',
-                                  prefixIcon: Icons.location_city_rounded,
-                                  validator: _required,
-                                ),
-                              ),
-                              SizedBox(width: AppSpacing.gapMD),
-                              Expanded(
-                                child: _TfField(
-                                  controller: vm.stateCtrl,
-                                  label: 'State',
-                                  hint: 'State',
-                                  prefixIcon: Icons.map_rounded,
-                                  validator: _required,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(height: AppSpacing.gapMD),
-
-                    // ── 3. Business Details ─────────────────────────────────────
+                    // ── 2. Business Details ─────────────────────────────────────
                     _SectionCard(
                       label: 'Business Details',
                       icon: Icons.business_center_rounded,
@@ -173,6 +112,16 @@ class _StoreVisitView extends StatelessWidget {
                         children: [
                           // Store Type Dropdown
                           _StoreTypeDropdown(vm: vm),
+                          if (vm.selectedStoreType == 'Other') ...[
+                            SizedBox(height: AppSpacing.gapMD),
+                            _TfField(
+                              controller: vm.otherStoreTypeCtrl,
+                              label: 'Other Store Type',
+                              hint: 'Specify store type',
+                              prefixIcon: Icons.edit_note_rounded,
+                              validator: _required,
+                            ),
+                          ],
                           SizedBox(height: AppSpacing.gapMD),
                           _TfField(
                             controller: vm.monthlyPurchaseCtrl,
@@ -194,42 +143,129 @@ class _StoreVisitView extends StatelessWidget {
                           SizedBox(height: AppSpacing.gapSM),
                           const _Divider(),
                           SizedBox(height: AppSpacing.gapSM),
-                          // Toggle switches
-                          _ToggleTile(
-                            label: 'App Installed',
-                            subtitle: 'Is the TrackForce app installed on store?',
+                          const _Divider(),
+                          SizedBox(height: AppSpacing.gapMD),
+
+                          // 1. App Installation
+                          _RadioQuestion(
+                            label: 'App Installation?',
                             icon: Icons.install_mobile_rounded,
-                            value: vm.appInstalled,
-                            onChanged: vm.toggleAppInstalled,
+                            value: vm.isAppInstalled,
+                            onChanged: vm.setAppInstalled,
                           ),
-                          _ToggleTile(
-                            label: 'RES',
-                            subtitle: 'Is the retailer enrolled in RES?',
-                            icon: Icons.assignment_turned_in_rounded,
-                            value: vm.res,
-                            onChanged: vm.toggleRes,
+                          if (vm.isAppInstalled == false) ...[
+                            SizedBox(height: AppSpacing.gapSM),
+                            _ReasonDropdown(
+                              label: 'Select Installation Status',
+                              value: vm.appNotInstalledReason,
+                              items: StoreVisitViewModel.installationFailureReasons,
+                              onChanged: vm.setAppNotInstalledReason,
+                            ),
+                            if (vm.appNotInstalledReason == 'Enter any other reason') ...[
+                              SizedBox(height: AppSpacing.gapSM),
+                              _TfField(
+                                controller: vm.appNotInstalledOtherCtrl,
+                                label: 'Enter Reason',
+                                hint: 'Specify your reason',
+                                prefixIcon: Icons.edit_note_rounded,
+                                validator: _required,
+                              ),
+                            ],
+                          ],
+
+                          const _Divider(),
+                          SizedBox(height: AppSpacing.gapMD),
+
+                          // 2. Registration Completed
+                          _RadioQuestion(
+                            label: 'Registration completed?',
+                            icon: Icons.app_registration_rounded,
+                            value: vm.isRegistrationCompleted,
+                            onChanged: vm.setRegistrationCompleted,
                           ),
-                          _ToggleTile(
-                            label: 'Order Placed',
-                            subtitle: 'Was an order placed during this visit?',
-                            icon: Icons.shopping_cart_checkout_rounded,
-                            value: vm.orderPlaced,
-                            onChanged: vm.toggleOrderPlaced,
-                          ),
-                          _ToggleTile(
-                            label: 'App Training',
-                            subtitle: 'Was app training provided?',
+                          if (vm.isRegistrationCompleted == true) ...[
+                            SizedBox(height: AppSpacing.gapSM),
+                            _TfField(
+                              controller: vm.regFeedbackCtrl,
+                              label: 'Feedback',
+                              hint: 'Enter registration feedback',
+                              prefixIcon: Icons.feedback_outlined,
+                            ),
+                          ] else if (vm.isRegistrationCompleted == false) ...[
+                            SizedBox(height: AppSpacing.gapSM),
+                            _TfField(
+                              controller: vm.regNoReasonCtrl,
+                              label: 'Reason',
+                              hint: 'Why registration not completed?',
+                              prefixIcon: Icons.error_outline_rounded,
+                              validator: _required,
+                            ),
+                          ],
+
+                          const _Divider(),
+                          SizedBox(height: AppSpacing.gapMD),
+
+                          // 3. App Training
+                          _RadioQuestion(
+                            label: 'App training?',
                             icon: Icons.school_rounded,
-                            value: vm.appTraining,
-                            onChanged: vm.toggleAppTraining,
+                            value: vm.isAppTrainingProvided,
+                            onChanged: vm.setAppTrainingProvided,
                           ),
+                          if (vm.isAppTrainingProvided == true) ...[
+                            SizedBox(height: AppSpacing.gapSM),
+                            _TfField(
+                              controller: vm.trainingFeedbackCtrl,
+                              label: 'Feedback',
+                              hint: 'Enter training feedback',
+                              prefixIcon: Icons.thumb_up_outlined,
+                            ),
+                          ] else if (vm.isAppTrainingProvided == false) ...[
+                            SizedBox(height: AppSpacing.gapSM),
+                            _TfField(
+                              controller: vm.trainingNoReasonCtrl,
+                              label: 'Reason',
+                              hint: 'Why training not provided?',
+                              prefixIcon: Icons.help_outline_rounded,
+                              validator: _required,
+                            ),
+                          ],
+
+                          const _Divider(),
+                          SizedBox(height: AppSpacing.gapMD),
+
+                          // 4. First Order Placed
+                          _RadioQuestion(
+                            label: 'First Order placed?',
+                            icon: Icons.shopping_bag_rounded,
+                            value: vm.isOrderPlaced,
+                            onChanged: vm.setOrderPlaced,
+                          ),
+                          if (vm.isOrderPlaced == true) ...[
+                            SizedBox(height: AppSpacing.gapSM),
+                            _TfField(
+                              controller: vm.orderFeedbackCtrl,
+                              label: 'Feedback',
+                              hint: 'Enter order feedback',
+                              prefixIcon: Icons.shopping_cart_outlined,
+                            ),
+                          ] else if (vm.isOrderPlaced == false) ...[
+                            SizedBox(height: AppSpacing.gapSM),
+                            _TfField(
+                              controller: vm.orderNoReasonCtrl,
+                              label: 'Reason',
+                              hint: 'Why order not placed?',
+                              prefixIcon: Icons.remove_shopping_cart_rounded,
+                              validator: _required,
+                            ),
+                          ],
                         ],
                       ),
                     ),
 
                     SizedBox(height: AppSpacing.gapMD),
 
-                    // ── 4. Visit Status ─────────────────────────────────────────
+                    // ── 3. Visit Status ─────────────────────────────────────────
                     _SectionCard(
                       label: 'Visit Status',
                       icon: Icons.flag_rounded,
@@ -249,6 +285,66 @@ class _StoreVisitView extends StatelessWidget {
                             SizedBox(height: AppSpacing.gapMD),
                             _FollowUpPanel(vm: vm),
                           ],
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: AppSpacing.gapMD),
+
+                    // ── 4. Visit Proof ──────────────────────────────────────────
+                    _SectionCard(
+                      label: 'Visit Proof',
+                      icon: Icons.camera_alt_rounded,
+                      iconColor: AppColors.secondary,
+                      iconTint: AppColors.secondaryContainer,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Upload genuine proofs for this visit record',
+                            style: AppTextStyles.bodyS.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          SizedBox(height: AppSpacing.gapMD),
+                          GridView.count(
+                            crossAxisCount: 4,
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            crossAxisSpacing: AppSpacing.gapSM,
+                            mainAxisSpacing: AppSpacing.gapSM,
+                            childAspectRatio: 1.0,
+                            children: [
+                              _PhotoTile(
+                                vm: vm,
+                                photoKey: 'store',
+                                label: 'Store',
+                                icon: Icons.storefront_rounded,
+                                isRequired: true,
+                              ),
+                              _PhotoTile(
+                                vm: vm,
+                                photoKey: 'board',
+                                label: 'Board',
+                                icon: Icons.signpost_rounded,
+                                isRequired: true,
+                              ),
+                              _PhotoTile(
+                                vm: vm,
+                                photoKey: 'owner',
+                                label: 'Owner',
+                                icon: Icons.person_pin_circle_rounded,
+                                isRequired: false,
+                              ),
+                              _PhotoTile(
+                                vm: vm,
+                                photoKey: 'selfie',
+                                label: 'Selfie',
+                                icon: Icons.portrait_rounded,
+                                isRequired: true,
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -294,11 +390,7 @@ class _StoreVisitView extends StatelessWidget {
       preferredSize: const Size.fromHeight(AppSpacing.appBarHeightLarge),
       child: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.primary, AppColors.primaryDark],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppColors.primary,
         ),
         child: AppBar(
           backgroundColor: Colors.transparent,
@@ -490,7 +582,7 @@ class _TfField extends StatelessWidget {
         ),
         contentPadding: EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
+          vertical: AppSpacing.sm,
         ),
       ),
     );
@@ -592,7 +684,7 @@ class _GpsButton extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// STORE TYPE DROPDOWN
+// STORE TYPE SELECTION (Improved)
 // ─────────────────────────────────────────────
 class _StoreTypeDropdown extends StatelessWidget {
   final StoreVisitViewModel vm;
@@ -600,55 +692,452 @@ class _StoreTypeDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs    = theme.colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
-    return DropdownButtonFormField<String>(
-      value: vm.selectedStoreType,
-      onChanged: vm.setStoreType,
+    return FormField<String>(
       validator: (v) => v == null ? 'Please select a store type' : null,
-      style: AppTextStyles.bodyM.copyWith(color: cs.onSurface),
-      decoration: InputDecoration(
-        labelText: 'Store Type',
-        prefixIcon: Icon(Icons.category_rounded,
-            size: AppSpacing.iconMD, color: cs.onSurfaceVariant),
-        labelStyle: AppTextStyles.labelM.copyWith(color: cs.onSurfaceVariant),
-        filled: true,
-        fillColor: cs.surfaceContainerHighest.withAlpha((0.4 * 255).round()),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: AppColors.borderLight),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: AppColors.borderLight),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: AppColors.error),
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.md,
-        ),
+      initialValue: vm.selectedStoreType,
+      builder: (state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            InkWell(
+              onTap: () => _showPicker(context, state),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHighest.withAlpha((0.3 * 255).round()),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  border: Border.all(
+                    color: state.hasError ? AppColors.error : AppColors.borderLight,
+                    width: state.hasError ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.category_rounded, size: AppSpacing.iconMD, color: state.hasError ? AppColors.error : cs.onSurfaceVariant),
+                    SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Store Type', style: AppTextStyles.caption.copyWith(color: cs.onSurfaceVariant)),
+                          Text(
+                            vm.selectedStoreType ?? 'Select Store Type',
+                            style: AppTextStyles.bodyM.copyWith(
+                              color: vm.selectedStoreType == null ? cs.onSurfaceVariant.withAlpha(150) : cs.onSurface,
+                              fontWeight: vm.selectedStoreType == null ? FontWeight.normal : FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.keyboard_arrow_down_rounded, color: cs.onSurfaceVariant, size: AppSpacing.iconLG),
+                  ],
+                ),
+              ),
+            ),
+            if (state.hasError) ...[
+              Padding(
+                padding: EdgeInsets.only(left: AppSpacing.md, top: AppSpacing.xs),
+                child: Text(
+                  state.errorText!,
+                  style: AppTextStyles.caption.copyWith(color: AppColors.error),
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+
+  void _showPicker(BuildContext context, FormFieldState<String> state) {
+    final cs = Theme.of(context).colorScheme;
+    final items = StoreVisitViewModel.storeTypes;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl2)),
       ),
-      isExpanded: true,
-      items: StoreVisitViewModel.storeTypes
-          .map((t) => DropdownMenuItem(
-                value: t,
-                child: Text(t, style: AppTextStyles.bodyM.copyWith(color: cs.onSurface)),
-              ))
-          .toList(),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: cs.onSurfaceVariant.withAlpha(50), borderRadius: BorderRadius.circular(2)),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    const Icon(Icons.category_rounded, color: AppColors.primary, size: AppSpacing.iconMD),
+                    SizedBox(width: AppSpacing.md),
+                    Text('Choose Store Type', style: AppTextStyles.labelL.copyWith(fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
+              const Divider(),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    final isSelected = item == vm.selectedStoreType;
+
+                    return ListTile(
+                      onTap: () {
+                        vm.setStoreType(item);
+                        state.didChange(item);
+                        Navigator.pop(context);
+                      },
+                      leading: Container(
+                        padding: EdgeInsets.all(AppSpacing.xs),
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppColors.primaryContainer : cs.surfaceContainerHighest.withAlpha(100),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          isSelected ? Icons.check_rounded : Icons.radio_button_unchecked_rounded,
+                          size: AppSpacing.iconSM,
+                          color: isSelected ? AppColors.primary : cs.onSurfaceVariant,
+                        ),
+                      ),
+                      title: Text(item, style: AppTextStyles.bodyM.copyWith(color: isSelected ? AppColors.primary : cs.onSurface, fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal)),
+                      trailing: isSelected ? Icon(Icons.check_circle_rounded, color: AppColors.primary, size: AppSpacing.iconMD) : null,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
 
 // ─────────────────────────────────────────────
-// TOGGLE TILE
+// PHOTO TILE COMPONENT
+// ─────────────────────────────────────────────
+class _PhotoTile extends StatelessWidget {
+  final StoreVisitViewModel vm;
+  final String photoKey;
+  final String label;
+  final IconData icon;
+  final bool isRequired;
+
+  const _PhotoTile({
+    required this.vm,
+    required this.photoKey,
+    required this.label,
+    required this.icon,
+    this.isRequired = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final photo = vm.getPhoto(photoKey);
+
+    return InkWell(
+      onTap: () => vm.pickPhoto(photoKey),
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest.withAlpha((0.3 * 255).round()),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: photo != null ? AppColors.success : AppColors.borderLight,
+            width: photo != null ? 1.5 : 1,
+          ),
+          image: photo != null
+              ? DecorationImage(
+                  image: FileImage(File(photo.path)),
+                  fit: BoxFit.cover,
+                )
+              : null,
+        ),
+        child: photo != null
+            ? Stack(
+                children: [
+                   // Delete Overlay
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () {
+                        vm.removePhoto(photoKey);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: AppColors.error,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha((0.2 * 255).round()),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.xs),
+                      decoration: BoxDecoration(
+                        color: cs.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(icon, color: cs.onSurfaceVariant, size: 16),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      label,
+                      style: AppTextStyles.caption.copyWith(fontSize: 9, color: cs.onSurface),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+              ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// RADIO QUESTION COMPONENT
+// ─────────────────────────────────────────────
+class _RadioQuestion extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool? value;
+  final ValueChanged<bool?> onChanged;
+
+  const _RadioQuestion({
+    required this.label,
+    required this.icon,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Row(
+        children: [
+          Icon(icon, size: AppSpacing.iconSM, color: cs.primary),
+          SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              label,
+              style: AppTextStyles.labelL.copyWith(
+                color: cs.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          SizedBox(width: AppSpacing.md),
+          _RadioOption(
+            label: 'Yes',
+            isSelected: value == true,
+            onTap: () => onChanged(true),
+          ),
+          SizedBox(width: AppSpacing.sm),
+          _RadioOption(
+            label: 'No',
+            isSelected: value == false,
+            onTap: () => onChanged(false),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RadioOption extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _RadioOption({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.xs),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+              size: 20,
+              color: isSelected ? AppColors.primary : cs.onSurfaceVariant,
+            ),
+            SizedBox(width: 4),
+            Text(
+              label,
+              style: AppTextStyles.labelM.copyWith(
+                color: isSelected ? AppColors.primary : cs.onSurface,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// REASON DROPDOWN (Reusable for failures)
+// ─────────────────────────────────────────────
+class _ReasonDropdown extends StatelessWidget {
+  final String label;
+  final String? value;
+  final List<String> items;
+  final ValueChanged<String?> onChanged;
+
+  const _ReasonDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return InkWell(
+      onTap: () => _showPicker(context),
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: cs.surfaceContainerHighest.withAlpha((0.3 * 255).round()),
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: AppColors.borderLight),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.report_problem_rounded, size: AppSpacing.iconSM, color: cs.onSurfaceVariant),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: AppTextStyles.caption.copyWith(color: cs.onSurfaceVariant)),
+                  Text(
+                    value ?? 'Select Reason',
+                    style: AppTextStyles.bodyM.copyWith(
+                      color: value == null ? cs.onSurfaceVariant.withAlpha(150) : cs.onSurface,
+                      fontWeight: value == null ? FontWeight.normal : FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.keyboard_arrow_down_rounded, color: cs.onSurfaceVariant, size: AppSpacing.iconMD),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPicker(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl2)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom + AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(vertical: AppSpacing.md),
+                width: 40, height: 4,
+                decoration: BoxDecoration(color: cs.onSurfaceVariant.withAlpha(50), borderRadius: BorderRadius.circular(2)),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    const Icon(Icons.list_alt_rounded, color: AppColors.primary, size: AppSpacing.iconMD),
+                    SizedBox(width: AppSpacing.md),
+                    Text('Choose Reason', style: AppTextStyles.labelL.copyWith(fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              ),
+              const Divider(),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final item = items[index];
+                    final isSelected = item == value;
+
+                    return ListTile(
+                      onTap: () {
+                        onChanged(item);
+                        Navigator.pop(context);
+                      },
+                      title: Text(item, style: AppTextStyles.bodyM.copyWith(
+                        color: isSelected ? AppColors.primary : cs.onSurface,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                      )),
+                      trailing: isSelected ? Icon(Icons.check_circle_rounded, color: AppColors.primary, size: AppSpacing.iconMD) : null,
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// TOGGLE TILE (Deprecated - keep for other uses if needed, or remove)
 // ─────────────────────────────────────────────
 class _ToggleTile extends StatelessWidget {
   final String   label;
@@ -738,48 +1227,46 @@ class _VisitStatusGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return GridView.count(
-      crossAxisCount: 2,
+      crossAxisCount: 4,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      crossAxisSpacing: AppSpacing.gapSM,
-      mainAxisSpacing: AppSpacing.gapSM,
-      childAspectRatio: 2.4,
+      crossAxisSpacing: AppSpacing.gapXS,
+      mainAxisSpacing: AppSpacing.gapXS,
+      childAspectRatio: 0.85,
       children: _statuses.map((s) {
         final isActive = vm.visitStatus == s.$1;
         return GestureDetector(
           onTap: () => vm.setVisitStatus(s.$1),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
+            padding: const EdgeInsets.all(AppSpacing.xs),
             decoration: BoxDecoration(
-              color: isActive ? s.$5 : theme.colorScheme.surfaceContainerHighest.withAlpha((0.3 * 255).round()),
+              color: isActive ? s.$5 : theme.colorScheme.surfaceContainerHighest.withAlpha((0.2 * 255).round()),
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: isActive ? s.$4 : AppColors.borderLight,
+                color: isActive ? s.$4 : AppColors.borderLight.withAlpha(100),
                 width: isActive ? 1.5 : 1,
               ),
             ),
-            child: Row(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   s.$3,
-                  size: AppSpacing.iconMD,
+                  size: AppSpacing.iconSM,
                   color: isActive ? s.$4 : theme.colorScheme.onSurfaceVariant,
                 ),
-                SizedBox(width: AppSpacing.gapSM),
-                Expanded(
-                  child: Text(
-                    s.$2,
-                    style: AppTextStyles.labelM.copyWith(
-                      color: isActive ? s.$4 : theme.colorScheme.onSurface,
-                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 4),
+                Text(
+                  s.$2,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(
+                    fontSize: 8,
+                    color: isActive ? s.$4 : theme.colorScheme.onSurface,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -1035,14 +1522,7 @@ class _SubmitButton extends StatelessWidget {
       height: AppSpacing.xl5,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: vm.isSubmitting
-              ? null
-              : const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-          color: vm.isSubmitting ? AppColors.primaryContainer : null,
+          color: vm.isSubmitting ? AppColors.primaryContainer : AppColors.primary,
           borderRadius: BorderRadius.circular(AppRadius.md),
           boxShadow: vm.isSubmitting
               ? []

@@ -1,23 +1,16 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:developer' as developer;
 
+/// Handles non-sensitive persistent storage like User ID, Device ID, etc.
+/// Sensitive data like JWT tokens are handled by TokenService.
 class StorageService {
-  static const String _tokenKey = 'auth_token';
   static const String _userIdKey = 'user_id';
   static const String _deviceIdKey = 'device_id';
-
-  Future<void> saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, token);
-  }
-
-  Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
-  }
 
   Future<void> saveUserId(String userId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userIdKey, userId);
+    developer.log('StorageService: User ID saved', name: 'STORAGE');
   }
 
   Future<String?> getUserId() async {
@@ -28,6 +21,7 @@ class StorageService {
   Future<void> saveDeviceId(String deviceId) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_deviceIdKey, deviceId);
+    developer.log('StorageService: Device ID saved', name: 'STORAGE');
   }
 
   Future<String?> getDeviceId() async {
@@ -38,10 +32,6 @@ class StorageService {
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-  }
-
-  Future<bool> isLoggedIn() async {
-    final token = await getToken();
-    return token != null && token.isNotEmpty;
+    developer.log('StorageService: All cleared', name: 'STORAGE');
   }
 }

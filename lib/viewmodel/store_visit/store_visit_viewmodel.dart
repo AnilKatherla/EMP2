@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import '../../data/models/visit_models.dart';
+import '../../data/repositories/visit_repository.dart';
 
 // ─────────────────────────────────────────────
 // ENUMS
@@ -25,6 +28,11 @@ enum NotInterestedReason {
 // ─────────────────────────────────────────────
 
 class StoreVisitViewModel extends ChangeNotifier {
+  final VisitRepository _repository;
+
+  StoreVisitViewModel({required VisitRepository repository})
+      : _repository = repository;
+
   // ── Form Key ─────────────────────────────────────────────────────────────
   final formKey = GlobalKey<FormState>();
   final _picker = ImagePicker();
@@ -219,12 +227,92 @@ class StoreVisitViewModel extends ChangeNotifier {
     _isSubmitting = true;
     notifyListeners();
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // 1. Prepare Photos (Convert to Base64)
+      final List<String> photoList = [];
+      for (var key in _photos.keys) {
+        final file = _photos[key];
+        if (file != null) {
+          final bytes = await file.readAsBytes();
+          final base64 = base64Encode(bytes);
+          photoList.add('data:image/jpeg;base64,$base64');
+        }
+      }
 
-    _isSubmitting = false;
-    notifyListeners();
-    return true;
+      // 2. Prepare Milestones
+      final milestones = {
+        'initialCheck': _isAppInstalled ?? false,
+        'knowledgeShared': _isAppTrainingProvided ?? false,
+        'orderLogged': _isOrderPlaced ?? false,
+      };
+
+      // 3. Prepare App Installation Object (Matching Backend)
+      final appInstallation = {
+        'status': _isAppInstalled == true ? 'Yes' : 'No',
+        'reason': _appNotInstalledReason,
+        'otherReason': appNotInstalledOtherCtrl.text,
+        'registration': {
+          'status': _isRegistrationCompleted == true ? 'Yes' : 'No',
+          'feedback': regFeedbackCtrl.text,
+          'reason': regNoReasonCtrl.text,
+        },
+        'training': {
+          'status': _isAppTrainingProvided == true ? 'Yes' : 'No',
+          'feedback': trainingFeedbackCtrl.text,
+          'reason': trainingNoReasonCtrl.text,
+        },
+        'firstOrder': {
+          'status': _isOrderPlaced == true ? 'Yes' : 'No',
+          'feedback': orderFeedbackCtrl.text,
+          'reason': orderNoReasonCtrl.text,
+        }
+      };
+
+      // 4. Create Request Object
+      final statusMap = {
+        VisitStatus.completed: 'completed',
+        VisitStatus.partiallyCompleted: 'partially_completed',
+        VisitStatus.notInterested: 'not_interested',
+        VisitStatus.needFollowUp: 'follow_up',
+      };
+
+      final request = VisitRequest(
+        storeName: storeNameCtrl.text,
+        ownerName: ownerNameCtrl.text,
+        mobileNumber: mobileCtrl.text,
+        visitType: 'store',
+        status: statusMap[_visitStatus] ?? 'completed',
+        address: addressCtrl.text,
+        city: cityCtrl.text,
+        state: stateCtrl.text,
+        pinCode: pinCodeCtrl.text,
+        notes: followUpNotesCtrl.text,
+        milestones: milestones,
+        photos: photoList,
+        visitForm: {
+          'storeType': _selectedStoreType,
+          'otherStoreType': otherStoreTypeCtrl.text,
+          'monthlyPurchase': monthlyPurchaseCtrl.text,
+          'interestedProducts': interestedProductsCtrl.text,
+          'appInstallation': appInstallation,
+          'gstNumber': gstCtrl.text,
+          'followUpDate': _followUpDate?.toIso8601String(),
+          'notInterestedReason': _notInterestedReason?.toString(),
+        },
+      );
+
+      // 5. Submit to Repository
+      await _repository.createVisit(request);
+
+      _isSubmitting = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Submission Error: $e');
+      _isSubmitting = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   // ── Dispose ───────────────────────────────────────────────────────────────

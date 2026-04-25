@@ -7,6 +7,7 @@ import 'package:emp/core/theme/app_colors.dart';
 import 'package:emp/core/theme/app_spacing.dart';
 import 'package:emp/core/theme/app_text_styles.dart';
 import 'package:emp/viewmodel/store_visit/store_visit_viewmodel.dart';
+import 'package:emp/data/repositories/visit_repository.dart';
 import 'package:image_picker/image_picker.dart';
 
 // ─────────────────────────────────────────────
@@ -18,7 +19,9 @@ class StoreVisitScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => StoreVisitViewModel(),
+      create: (ctx) => StoreVisitViewModel(
+        repository: ctx.read<VisitRepository>(),
+      ),
       child: const _StoreVisitView(),
     );
   }
@@ -850,49 +853,58 @@ class _PhotoTile extends StatelessWidget {
     final photo = vm.getPhoto(photoKey);
 
     return InkWell(
-      onTap: () => vm.pickPhoto(photoKey),
+      onTap: () {
+        if (photo != null) {
+          _showImagePreview(context, photo);
+        } else {
+          vm.pickPhoto(photoKey);
+        }
+      },
       borderRadius: BorderRadius.circular(AppRadius.lg),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: cs.surfaceContainerHighest.withAlpha((0.3 * 255).round()),
+          color: photo != null 
+            ? AppColors.success.withOpacity(0.05) 
+            : cs.surfaceContainerHighest.withAlpha((0.3 * 255).round()),
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(
             color: photo != null ? AppColors.success : AppColors.borderLight,
             width: photo != null ? 1.5 : 1,
           ),
-          image: photo != null
-              ? DecorationImage(
-                  image: FileImage(File(photo.path)),
-                  fit: BoxFit.cover,
-                )
-              : null,
         ),
         child: photo != null
             ? Stack(
                 children: [
-                   // Delete Overlay
+                   Center(
+                     child: Column(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         const Icon(Icons.description_rounded, color: AppColors.success, size: 20),
+                         const SizedBox(height: 2),
+                         Text(
+                           'Captured',
+                           style: AppTextStyles.caption.copyWith(
+                             fontSize: 8, 
+                             color: AppColors.success,
+                             fontWeight: FontWeight.bold,
+                           ),
+                         ),
+                       ],
+                     ),
+                   ),
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 4,
+                    right: 4,
                     child: GestureDetector(
-                      onTap: () {
-                        vm.removePhoto(photoKey);
-                      },
+                      onTap: () => vm.removePhoto(photoKey),
                       child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
                           color: AppColors.error,
                           shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha((0.2 * 255).round()),
-                              blurRadius: 4,
-                            ),
-                          ],
                         ),
-                        child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
+                        child: const Icon(Icons.close_rounded, size: 10, color: Colors.white),
                       ),
                     ),
                   ),
@@ -917,6 +929,35 @@ class _PhotoTile extends StatelessWidget {
                     ),
                   ],
               ),
+      ),
+    );
+  }
+
+  void _showImagePreview(BuildContext context, XFile photo) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                child: Image.file(
+                  File(photo.path),
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 20,
+              child: IconButton(
+                icon: const Icon(Icons.close_rounded, color: Colors.white, size: 30),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../data/models/visit_models.dart';
+import '../../data/repositories/visit_repository.dart';
 
 // ─────────────────────────────────────────────
 // ENUMS
@@ -16,6 +18,11 @@ enum SupplierVisitOutcome {
 // ─────────────────────────────────────────────
 
 class SupplierVisitViewModel extends ChangeNotifier {
+  final VisitRepository _repository;
+
+  SupplierVisitViewModel({required VisitRepository repository})
+      : _repository = repository;
+
   // ── Form Key ─────────────────────────────────────────────────────────────
   final formKey = GlobalKey<FormState>();
 
@@ -47,12 +54,39 @@ class SupplierVisitViewModel extends ChangeNotifier {
     _isSubmitting = true;
     notifyListeners();
     
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
-    
-    _isSubmitting = false;
-    notifyListeners();
-    return true;
+    try {
+      final statusMap = {
+        SupplierVisitOutcome.interested: 'completed',
+        SupplierVisitOutcome.notInterested: 'not_interested',
+        SupplierVisitOutcome.negotiation: 'partially_completed',
+        SupplierVisitOutcome.followUpRequired: 'follow_up',
+      };
+
+      final request = VisitRequest(
+        storeName: supplierNameCtrl.text,
+        ownerName: contactPersonCtrl.text,
+        mobileNumber: phoneCtrl.text,
+        visitType: 'supplier',
+        status: statusMap[_outcome] ?? 'completed',
+        address: locationCtrl.text,
+        notes: interestDetailsCtrl.text,
+        visitForm: {
+          'productCategory': productCategoryCtrl.text,
+          'interestDetails': interestDetailsCtrl.text,
+        },
+      );
+
+      await _repository.createVisit(request);
+
+      _isSubmitting = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Submission Error: $e');
+      _isSubmitting = false;
+      notifyListeners();
+      return false;
+    }
   }
 
   // ── Dispose ──────────────────────────────────────────────────────────────

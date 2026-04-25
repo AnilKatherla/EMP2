@@ -51,6 +51,12 @@
 	<string>This app requires access to the photo library to upload visit proof proofs.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app requires microphone access if you record videos for visit proof.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to location when open to track your visits and attendance.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs access to location even in the background to track your travel distance during shifts.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs access to location to track your visits and attendance.</string>
 
 </dict>
 </plist>

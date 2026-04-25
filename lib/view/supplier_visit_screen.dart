@@ -5,6 +5,7 @@ import 'package:emp/core/theme/app_colors.dart';
 import 'package:emp/core/theme/app_spacing.dart';
 import 'package:emp/core/theme/app_text_styles.dart';
 import 'package:emp/viewmodel/supplier_visit/supplier_visit_viewmodel.dart';
+import 'package:emp/data/repositories/visit_repository.dart';
 
 // ─────────────────────────────────────────────
 // SUPPLIER VISIT SCREEN
@@ -15,7 +16,9 @@ class SupplierVisitScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => SupplierVisitViewModel(),
+      create: (ctx) => SupplierVisitViewModel(
+        repository: ctx.read<VisitRepository>(),
+      ),
       child: const _SupplierVisitView(),
     );
   }

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:emp/core/theme/app_colors.dart';
 import 'package:emp/core/theme/app_spacing.dart';
 import 'forgot_password_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:emp/routes/app_routes.dart';
+import '../viewmodel/auth/auth_viewmodel.dart';
 
 // ── LOCAL COLOR PALETTE ──────────────────────────────────────────────────────
 // Self-contained tokens for this screen.
@@ -37,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey      = GlobalKey<FormState>();
   final _emailCtrl    = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  bool  _isLoading    = false;
 
   @override
   void dispose() {
@@ -64,25 +66,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // ── Actions ─────────────────────────────────────────────────────────────────
 
-  // Static demo credentials
-  static const _demoEmail    = 'admin@trackforce.com';
-  static const _demoPassword = 'admin123';
-
   Future<void> _onLogin() async {
     if (!_formKey.currentState!.validate()) return;
     FocusScope.of(context).unfocus();
 
-    // Show loading for half a second for realistic feel
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 600));
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+    final authVM = Provider.of<AuthViewModel>(context, listen: false);
 
-    if (_emailCtrl.text.trim() == _demoEmail &&
-        _passwordCtrl.text == _demoPassword) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+    final success = await authVM.login(
+      email: _emailCtrl.text.trim(),
+      password: _passwordCtrl.text,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.pushReplacementNamed(context, AppRoutes.dashboard);
     } else {
-      _showSnack('Invalid email or password. Try admin@trackforce.com / admin123');
+      _showSnack(authVM.errorMessage ?? 'Login failed');
     }
   }
 
@@ -291,16 +291,19 @@ class _LoginScreenState extends State<LoginScreen> {
   // ── Sign In button (with loading + disabled states) ──────────────────────────
 
   Widget _buildLoginButton(BuildContext context) {
-    final isEmpty  = _emailCtrl.text.trim().isEmpty ||
-                     _passwordCtrl.text.isEmpty;
-    final disabled = isEmpty || _isLoading;
+    return Consumer<AuthViewModel>(
+      builder: (context, authVM, _) {
+        final isEmpty = _emailCtrl.text.trim().isEmpty || _passwordCtrl.text.isEmpty;
+        final disabled = isEmpty || authVM.isLoading;
 
-    return _PrimaryButton(
-      label:     'Sign In',
-      icon:      Icons.arrow_forward_rounded,
-      isLoading: _isLoading,
-      disabled:  disabled,
-      onTap:     _onLogin,
+        return _PrimaryButton(
+          label: 'Sign In',
+          icon: Icons.arrow_forward_rounded,
+          isLoading: authVM.isLoading,
+          disabled: disabled,
+          onTap: _onLogin,
+        );
+      },
     );
   }
 }

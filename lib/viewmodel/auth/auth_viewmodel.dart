@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import '../../data/models/auth_models.dart';
 import '../../data/repositories/auth_repository.dart';
-
 
 /// AuthViewModel — manages authentication state for the login flow.
 ///
@@ -22,16 +22,15 @@ class AuthViewModel extends ChangeNotifier {
 
   // ── Login ──────────────────────────────────────────────────────────────────
 
-  /// Authenticates the user with [identifier] and [password].
+  /// Authenticates the user with [email] and [password].
   ///
   /// Returns `true` on success, `false` on failure.
-  /// On success, navigation is handled by the caller (UI layer).
+  /// On success, the token is saved securely by the repository.
   Future<bool> login({
-    required BuildContext context,
-    required String identifier,
+    required String email,
     required String password,
   }) async {
-    if (identifier.trim().isEmpty || password.isEmpty) {
+    if (email.trim().isEmpty || password.isEmpty) {
       _errorMessage = 'Please fill in all fields.';
       notifyListeners();
       return false;
@@ -41,22 +40,36 @@ class AuthViewModel extends ChangeNotifier {
     _errorMessage = null;
 
     try {
-      await _repository.login(identifier.trim(), password);
+      developer.log('AuthViewModel: Initiating login for $email', name: 'AUTH');
+      await _repository.login(email.trim(), password);
       _setLoading(false);
+      developer.log('AuthViewModel: Login successful', name: 'AUTH');
       return true;
     } catch (e) {
+      developer.log('AuthViewModel: Login failed: $e', name: 'AUTH', error: e);
       _errorMessage = _friendlyError(e.toString());
       _setLoading(false);
       return false;
     }
   }
 
+  /// Checks if the user is currently logged in (token exists).
+  Future<bool> checkLoginStatus() async {
+    final isLoggedIn = await _repository.isLoggedIn();
+    developer.log('AuthViewModel: Checking login status: ${isLoggedIn ? "Logged In" : "Logged Out"}', name: 'AUTH');
+    return isLoggedIn;
+  }
+
+  /// Logs out the user and clears all session data.
+  Future<void> logout() async {
+    developer.log('AuthViewModel: Logging out...', name: 'AUTH');
+    await _repository.logout();
+    notifyListeners();
+  }
+
   // ── Verify OTP ─────────────────────────────────────────────────────────────
 
-  /// Verifies the OTP for the given [model.email].
-  ///
-  /// Returns `true` on success. Navigation is handled by the caller.
-  Future<bool> verifyOTP(BuildContext context, OTPModel model) async {
+  Future<bool> verifyOTP(OTPModel model) async {
     _setLoading(true);
     _errorMessage = null;
 
@@ -73,9 +86,6 @@ class AuthViewModel extends ChangeNotifier {
 
   // ── Reset Password ─────────────────────────────────────────────────────────
 
-  /// Resets the password for [model.email] to [model.newPassword].
-  ///
-  /// Returns `true` on success. Navigation is handled by the caller.
   Future<bool> resetPassword(ResetPasswordModel model) async {
     _setLoading(true);
     _errorMessage = null;

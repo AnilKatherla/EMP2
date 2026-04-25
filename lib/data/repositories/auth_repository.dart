@@ -1,32 +1,44 @@
+import 'dart:developer' as developer;
 import '../../core/services/api_service.dart';
 import '../../core/services/storage_service.dart';
+import '../../core/services/token_service.dart';
 import '../models/auth_models.dart';
 
 class AuthRepository {
   final ApiService _apiService;
   final StorageService _storageService;
+  final TokenService _tokenService;
 
   AuthRepository({
     required ApiService apiService,
     required StorageService storageService,
+    required TokenService tokenService,
   })  : _apiService = apiService,
-        _storageService = storageService;
+        _storageService = storageService,
+        _tokenService = tokenService;
 
-  Future<LoginResponse> login(String identifier, String password) async {
+  Future<LoginResponse> login(String email, String password) async {
     try {
-      final response = await _apiService.login(identifier, password);
+      final response = await _apiService.login(email, password);
       final loginResponse = LoginResponse.fromJson(response);
 
-      // Save token and user data
-      await _storageService.saveToken(loginResponse.token);
-      await _storageService.saveUserId(loginResponse.userId);
+      // Extract and Save token securely
+      final token = loginResponse.token;
+      await _tokenService.saveToken(token);
+      
+      // Log token for debugging (as requested)
+      developer.log('AuthRepository: Token extracted: $token', name: 'AUTH');
 
-      // Mock device binding
-      await _storageService.saveDeviceId('device_${DateTime.now().millisecondsSinceEpoch}');
+      // Save other user data
+      await _storageService.saveUserId(loginResponse.id);
+      
+      // Ensure ApiService has the latest token for future requests
+      _apiService.setToken(token);
 
       return loginResponse;
     } catch (e) {
-      throw Exception('Login failed: $e');
+      developer.log('AuthRepository: Login failed: $e', name: 'AUTH', error: e);
+      rethrow;
     }
   }
 
@@ -50,7 +62,7 @@ class AuthRepository {
 
   Future<ChangePasswordResponse> changePassword(String newPassword) async {
     try {
-      final token = await _storageService.getToken();
+      final token = await _tokenService.getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
@@ -71,14 +83,17 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
+    await _tokenService.deleteToken();
     await _storageService.clearAll();
+    _apiService.setToken(null);
   }
 
   Future<bool> isLoggedIn() async {
-    return await _storageService.isLoggedIn();
+    final token = await _tokenService.getToken();
+    return token != null && token.isNotEmpty;
   }
 
   Future<String?> getToken() async {
-    return await _storageService.getToken();
+    return await _tokenService.getToken();
   }
 }

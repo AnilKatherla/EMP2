@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:emp/core/theme/app_colors.dart';
 import 'package:emp/core/theme/app_spacing.dart';
+import 'package:emp/routes/app_routes.dart';
+import 'package:emp/routes/app_routes.dart';
 
 // ── LOCAL COLORS ──────────────────────────────────────────────────────────────
 abstract class _C {
@@ -111,7 +113,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     _showSnack('Password reset successfully!', isError: false);
     await Future.delayed(const Duration(milliseconds: 1200));
     if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (r) => false);
+    Navigator.pushNamedAndRemoveUntil(context, AppRoutes.login, (r) => false);
   }
 
   void _showSnack(String msg, {bool isError = true}) {

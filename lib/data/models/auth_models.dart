@@ -1,32 +1,47 @@
 class LoginRequest {
-  final String identifier;
+  final String email;
   final String password;
+  final String portal;
 
-  LoginRequest({required this.identifier, required this.password});
+  LoginRequest({
+    required this.email,
+    required this.password,
+    this.portal = 'EMPLOYEE',
+  });
 
   Map<String, dynamic> toJson() {
     return {
-      'identifier': identifier,
+      'email': email,
       'password': password,
+      'portal': portal,
     };
   }
 }
 
 class LoginResponse {
   final String token;
-  final String userId;
-  final String message;
+  final String id;
+  final String name;
+  final String email;
+  final String role;
+  final String? message;
 
   LoginResponse({
     required this.token,
-    required this.userId,
-    required this.message,
+    required this.id,
+    required this.name,
+    required this.email,
+    required this.role,
+    this.message,
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       token: json['token'],
-      userId: json['userId'],
+      id: json['_id'],
+      name: json['name'],
+      email: json['email'],
+      role: json['role'] ?? 'employee',
       message: json['message'],
     );
   }
